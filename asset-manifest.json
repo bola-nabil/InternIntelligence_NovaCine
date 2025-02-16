@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/InternIntelligence_NovaCine/static/css/main.67c73f6a.css",
+    "main.js": "/InternIntelligence_NovaCine/static/js/main.76fd63d5.js",
+    "static/js/453.f568d31b.chunk.js": "/InternIntelligence_NovaCine/static/js/453.f568d31b.chunk.js",
+    "index.html": "/InternIntelligence_NovaCine/index.html",
+    "main.67c73f6a.css.map": "/InternIntelligence_NovaCine/static/css/main.67c73f6a.css.map",
+    "main.76fd63d5.js.map": "/InternIntelligence_NovaCine/static/js/main.76fd63d5.js.map",
+    "453.f568d31b.chunk.js.map": "/InternIntelligence_NovaCine/static/js/453.f568d31b.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.67c73f6a.css",
+    "static/js/main.76fd63d5.js"
+  ]
+}
