@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import axios from "axios";
 import { Chip } from "@mui/material";
 
 const Geners = ({
@@ -11,24 +10,30 @@ const Geners = ({
   type,
 }) => {
   const handleAdd = (genre) => {
-    setSelectedGenres(...selectedGenres, genre);
+    setSelectedGenres([...selectedGenres, genre]);
     setGenres(genres.filter((g) => g.id !== genre.id));
     if (typeof setPage === "function") setPage(1);
   };
 
   const handleRemove = (genre) => {
     setSelectedGenres(
-      selectedGenres.filter((selected) => selected.id === genre.id)
+      selectedGenres.filter((selected) => selected.id !== genre.id)
     );
     setGenres([...genres, genre]);
     if (typeof setPage === "function") setPage(1);
   };
 
   const fetchGenres = async () => {
-    const { data } = await axios.get(
-      `https://api.themoviedb.org/3/genre/${type}/list?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`
-    );
-    setGenres(data.genres);
+    try {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/genre/${type}/list?api_key=${process.env.REACT_APP_API_KEY}&language=en-US
+`
+      );
+      const data = await res.json();
+      setGenres(data.genres);
+    } catch (error) {
+      console.error("finding error in genres => ", error);
+    }
   };
 
   useEffect(() => {
@@ -58,6 +63,7 @@ const Geners = ({
           label={genre.name}
           key={genre.id}
           clickable
+          color="secondary"
           size="small"
           onClick={() => handleAdd(genre)}
         />

@@ -1,11 +1,12 @@
 import React from "react";
+import "../styles/Header.css";
 
 const Header = () => {
   return (
-    <header className="d-flex justify-content-center align-items-center w-100 py-2">
-      <span className="first">🎬</span>
-      <span className="text-light title">NovaCine</span>
-      <span className="second">🎥</span>
+    <header>
+      <span>🎬</span>
+      <span>NovaCine</span>
+      <span>🎥</span>
     </header>
   );
 };

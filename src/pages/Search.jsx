@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Button,
   Tab,
@@ -7,18 +7,28 @@ import {
   ThemeProvider,
   createTheme,
 } from "@mui/material";
-import { Search as SearchIcon } from "@mui/icons-material";
 import ContentModal from "../components/ContentModal";
 import CustomPagination from "../components/CustomPagination";
-import axios from "axios";
 import "../styles/Search.css";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchMedia,
+  setPage,
+  setSearchText,
+  setType,
+} from "../store/slices/mediaSlice";
+import SearchIcon from "@mui/icons-material/Search";
 
 const Search = () => {
-  const [type, setType] = useState(0);
-  const [searchText, setSearchText] = useState("");
-  const [page, setPage] = useState(1);
-  const [content, setContent] = useState([]);
-  const [numOfPages, setNumOfPages] = useState();
+  const dispatch = useDispatch();
+  const { page, content, numOfPages, error, status, searchText, type } =
+    useSelector((state) => state.media);
+
+  const mediaUrl = `https://api.themoviedb.org/3/search/${
+    type ? "tv" : "movie"
+  }?api_key=${
+    process.env.REACT_APP_API_KEY
+  }&language=en-US&query=${searchText}&page=${page}&include_adult=false`;
 
   const darkTheme = createTheme({
     palette: {
@@ -29,61 +39,58 @@ const Search = () => {
     },
   });
 
-  const fetchSearch = async () => {
-    try {
-      const { data } = await axios.get(
-        `https://api.themoviedb.org/3/search/${type ? "tv" : "movie"}?api_key=${
-          process.env.REACT_APP_API_KEY
-        }&language=en-US&query=${searchText}&page=${page}&include_adult=false`
-      );
-      setContent(data.results);
-      setNumOfPages(data.total_pages);
-    } catch (error) {
-      console.log("search error => ", error);
-    }
-  };
-
   useEffect(() => {
     window.scroll(0, 0);
-    fetchSearch();
+    dispatch(fetchMedia({ mediaUrl }));
     // eslint-disable-next-line
-  }, [type, page]);
+  }, [dispatch, type, page]);
 
   return (
     <div>
-      <ThemeProvider theme={darkTheme}>
-        <div className="search">
-          <TextField
-            style={{ flex: 1 }}
-            className="search-box"
-            label="Search"
-            variant="filled"
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button
-            onClick={fetchSearch}
-            variant="contained"
-            style={{ marginLeft: 10 }}
+      {
+        <ThemeProvider theme={darkTheme}>
+          <div className="search">
+            <TextField
+              style={{ flex: 1 }}
+              className="search-box"
+              label="Search"
+              variant="filled"
+              onChange={(e) => dispatch(setSearchText(e.target.value))}
+            />
+            <Button
+              onClick={() => dispatch(fetchMedia({ mediaUrl }))}
+              variant="contained"
+              style={{ marginLeft: 10 }}
+            >
+              <SearchIcon />
+            </Button>
+          </div>
+          <Tabs
+            value={type}
+            indicatorColor="primary"
+            textColor="primary"
+            onChange={(e, newValue) => {
+              dispatch(setType(newValue));
+              dispatch((page) => setPage(page));
+            }}
+            style={{ paddingBottom: 5 }}
+            aria-label="disabled tabs"
           >
-            {SearchIcon}
-          </Button>
-        </div>
-        <Tabs
-          value={type}
-          indicatorColor="primary"
-          textColor="primary"
-          onChange={(e, newValue) => {
-            setType(newValue);
-            setPage(1);
-          }}
-          style={{ paddingBottom: 5 }}
-          aria-label="disabled tabs"
-        >
-          <Tab style={{ width: "50%" }} label="Search Movies" />
-          <Tab style={{ width: "50%" }} label="Search TV Series" />
-        </Tabs>
-      </ThemeProvider>
-      <div className="trending">
+            <Tab
+              style={{ width: "50%", color: "white" }}
+              label="Search Movies"
+            />
+            <Tab
+              style={{ width: "50%", color: "white" }}
+              label="Search TV Series"
+            />
+          </Tabs>
+        </ThemeProvider>
+      }
+      {status === "loading" && <p>Loading Searching Media...</p>}
+      {status === "failed" && <p>Error: {error}</p>}
+
+      <div className="app-design">
         {content &&
           content.map((item) => (
             <ContentModal
@@ -92,7 +99,7 @@ const Search = () => {
               poster={item.poster_path}
               title={item.title || item.name}
               date={item.first_air_date || item.release_date}
-              media_type={"movie"}
+              media_type={type === 0 ? "movie" : "tv"}
               vote_average={item.vote_average}
             />
           ))}
@@ -101,7 +108,10 @@ const Search = () => {
           (type ? <h2>No Series Found</h2> : <h2>No Movies Found</h2>)}
       </div>
       {numOfPages > 1 && (
-        <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+        <CustomPagination
+          setPage={(page) => dispatch(setPage(page))}
+          numOfPages={numOfPages}
+        />
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import {
   faTv,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -19,9 +20,12 @@ const NavLink = () => {
   return (
     <div>
       {links.map((link) => (
-        <div
+        <Button
+          color="inherit"
           key={link.path}
-          className={location.pathname === link.path ? "active" : ""}
+          className={`nav-link ${
+            location.pathname === link.path ? "active" : ""
+          }`}
         >
           <Link to={link.path}>
             <div className="home-icon">
@@ -29,7 +33,7 @@ const NavLink = () => {
             </div>
             {link.title}
           </Link>
-        </div>
+        </Button>
       ))}
     </div>
   );

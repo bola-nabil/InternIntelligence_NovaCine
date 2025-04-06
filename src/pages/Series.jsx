@@ -1,32 +1,28 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
 import ContentModal from "../components/ContentModal";
 import CustomPagination from "../components/CustomPagination";
 import Geners from "../components/Geners";
 import useGenre from "../hooks/useGenre";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchMedia,
+  setGenres,
+  setPage,
+  setSelectedGenres,
+} from "../store/slices/mediaSlice";
 
 const Series = () => {
-  const [genres, setGenres] = useState([]);
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  const [page, setPage] = useState(1);
-  const [content, setContent] = useState([]);
-  const [numOfPages, setNumOfPages] = useState();
+  const dispatch = useDispatch();
+  const { genres, selectedGenres, page, content, numOfPages, status, error } =
+    useSelector((state) => state.media);
   const genreForURL = useGenre(selectedGenres);
-
-  const fetchSeries = async () => {
-    const { data } = await axios.get(
-      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genreForURL}`
-    );
-    console.log("tv series data =>", data);
-    setContent(data.results);
-    setNumOfPages(data.total_pages);
-  };
+  const mediaUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genreForURL}`;
 
   useEffect(() => {
     window.scroll(0, 0);
-    fetchSeries();
+    dispatch(fetchMedia({ mediaUrl }));
     // eslint-disable-next-line
-  }, [genreForURL, page]);
+  }, [dispatch, genreForURL, page]);
 
   return (
     <div>
@@ -34,12 +30,14 @@ const Series = () => {
       <Geners
         type="tv"
         selectedGenres={selectedGenres}
-        setSelectedGenres={setSelectedGenres}
+        setSelectedGenres={(genres) => dispatch(setSelectedGenres(genres))}
         genres={genres}
-        setGenres={setGenres}
-        setPage={setPage}
+        setGenres={(genres) => dispatch(setGenres(genres))}
+        setPage={(page) => setPage(page)}
       />
-      <div className="trending">
+      {status === "loading" && <p>Loading Series...</p>}
+      {status === "failed" && <p>Error: {error}</p>}
+      <div className="app-design">
         {content &&
           content.map((item) => (
             <ContentModal
@@ -54,7 +52,10 @@ const Series = () => {
           ))}
       </div>
       {numOfPages > 1 && (
-        <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+        <CustomPagination
+          setPage={(page) => dispatch(setPage(page))}
+          numOfPages={numOfPages}
+        />
       )}
     </div>
   );

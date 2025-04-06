@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
 import { Fade, Modal, Backdrop, Button, Badge } from "@mui/material";
-import { YouTube } from "@mui/icons-material";
+import { makeStyles } from "@mui/styles";
+
 import {
   img_300,
   img_500,
@@ -10,6 +10,27 @@ import {
 } from "../config/config";
 import "../styles/ContentModal.css";
 import Carousel from "./Carousel";
+import YouTubeIcon from "@mui/icons-material/YouTube";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchData, fetchVideo, setOpen } from "../store/slices/modalSlice";
+
+const useStyles = makeStyles((theme) => ({
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    width: "90%",
+    height: "80%",
+    backgroundColor: "#39445a",
+    border: "1px solid #282c34",
+    borderRadius: 10,
+    color: "white",
+    padding: "10px",
+  },
+}));
+
 const ContentModal = ({
   media_type,
   id,
@@ -18,54 +39,25 @@ const ContentModal = ({
   title,
   date,
 }) => {
-  // const useStyles = makeStyles((theme) => ({
-  //   modal: {
-  //     display: "flex",
-  //     alignItems: "center",
-  //     justifyContent: "center",
-  //   },
-  //   paper: {
-  //     width: "90%",
-  //     height: "80%",
-  //     backgroundColor: "#39445a",
-  //     border: "1px solid #282c34",
-  //     borderRadius: 10,
-  //     color: "white",
-  //     // boxShadow: theme.shadows[5],
-  //     // padding: theme.spacing(1, 1, 3),
-  //   },
-  // }));
-  // const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const [content, setContent] = useState([]);
-  const [video, setVideo] = useState([]);
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const { open, content, video } = useSelector((state) => state.modal);
 
   const handleOpen = () => {
-    setOpen(true);
+    dispatch(setOpen(true));
   };
   const handleClose = () => {
-    setOpen(false);
+    dispatch(setOpen(false));
   };
 
-  const fetchData = async () => {
-    const { data } = await axios.get(
-      `https://api.themoviedb.org/3/${media_type}/${id}?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`
-    );
-    setContent(data);
-  };
-
-  const fetchVideo = async () => {
-    const { data } = await axios.get(
-      `https://api.themoviedb.org/3/${media_type}/${id}/videos?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`
-    );
-    setVideo(data.results[0]?.key);
-  };
+  const dataUrl = `https://api.themoviedb.org/3/${media_type}/${id}?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`;
+  const videoUrl = `https://api.themoviedb.org/3/${media_type}/${id}/videos?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`;
 
   useEffect(() => {
-    fetchData();
-    fetchVideo();
+    dispatch(fetchData({ dataUrl }));
+    dispatch(fetchVideo({ videoUrl }));
     // eslint-disable-next-line
-  }, []);
+  }, [dispatch]);
   return (
     <div>
       <div
@@ -75,6 +67,7 @@ const ContentModal = ({
         onClick={handleOpen}
       >
         <Badge
+          badgeContent={vote_average}
           color={vote_average > 6 ? "primary" : "secondary"}
           overlap="rectangular"
         />
@@ -84,14 +77,15 @@ const ContentModal = ({
           alt={title}
         />
         <b className="title">{title}</b>
-        <span className="subTitle">
+        <span className="sub-title">
           {media_type === "tv" ? "TV Series" : "Movie"}
-          <span className="subTitle">{date}</span>
+          <span className="sub-title">{date}</span>
         </span>
       </div>
       <Modal
         aria-labelledby="transition-modal-title"
         arial-describedby="transition-modal-description"
+        className={classes.modal}
         open={open}
         onClose={handleClose}
         closeAfterTransition
@@ -102,12 +96,12 @@ const ContentModal = ({
       >
         <Fade in={open}>
           {content && (
-            <div>
+            <div className={classes.paper}>
               <div className="content-modal">
                 <img
                   src={
                     content.poster_path
-                      ? `{${img_500}/${content.poster_path}}`
+                      ? `${img_500}/${content.poster_path}`
                       : unavailable
                   }
                   alt={content.name || content.title}
@@ -115,7 +109,7 @@ const ContentModal = ({
                 />
                 <img
                   src={
-                    content.backgrop_path
+                    content.backdrop_path
                       ? `${img_500}/${content.backdrop_path}`
                       : unavailableLandscape
                   }
@@ -145,7 +139,7 @@ const ContentModal = ({
                   </div>
                   <Button
                     variant="contained"
-                    startIcon={YouTube}
+                    startIcon={<YouTubeIcon />}
                     color="secondary"
                     target="_blank"
                     href={`https://www.youtube.com/watch?v=${video}`}

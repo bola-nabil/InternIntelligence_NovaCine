@@ -1,30 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import ContentModal from "./../components/ContentModal";
 import CustomPagination from "./../components/CustomPagination";
-import "../styles/Trending.css";
-import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchMedia, setPage } from "../store/slices/mediaSlice";
 
 const Trending = () => {
-  const [page, setPage] = useState(1);
-  const [content, setContent] = useState([]);
-
-  const fetchTrending = async () => {
-    const { data } = axios.get(
-      `https://api.themoviedb.org/3/trending/all/day?api_key=${process.env.REACT_APP_API_KEY}&page=${page}`
-    );
-    console.log("data => ", data);
-    setContent(data.results);
-  };
+  const dispatch = useDispatch();
+  const { page, content, status, error } = useSelector((state) => state.media);
+  const mediaUrl = `https://api.themoviedb.org/3/trending/all/day?api_key=${process.env.REACT_APP_API_KEY}&page=${page}`;
 
   useEffect(() => {
     window.scroll(0, 0);
-    fetchTrending();
+    dispatch(fetchMedia({ mediaUrl }));
     // eslint-disable-next-line
-  }, [page]);
+  }, [dispatch, page]);
   return (
     <div>
-      <span className="pageTitle">Trending Today</span>
-      <div className="trending">
+      <span className="page-title">Trending Today</span>
+      {status === "loading" && <p>Loading Trending...</p>}
+      {status === "failed" && <p>Error: {error}</p>}
+
+      <div className="app-design">
         {content &&
           content.map((item) => (
             <ContentModal
@@ -38,7 +34,7 @@ const Trending = () => {
             />
           ))}
       </div>
-      <CustomPagination setPage={setPage} />
+      <CustomPagination setPage={(page) => dispatch(setPage(page))} />
     </div>
   );
 };

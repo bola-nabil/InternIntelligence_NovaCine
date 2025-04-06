@@ -1,15 +1,19 @@
 import React from "react";
-import { Navbar, Nav, Container } from "react-bootstrap";
 import NavLink from "./NavLink";
+import { AppBar, Toolbar, Box } from "@mui/material";
+import "../styles/Navbar.css";
 const NavBar = () => {
   return (
-    <Navbar bg="dark" data-bs-theme="dark" fixed="bottom">
-      <Container>
-        <Nav className="text-end margin-auto">
+    <AppBar
+      position="fixed"
+      sx={{ top: "auto", bottom: 0, backgroundColor: "#39445a" }}
+    >
+      <Toolbar>
+        <Box>
           <NavLink />
-        </Nav>
-      </Container>
-    </Navbar>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 
